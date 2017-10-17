@@ -34,7 +34,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
-	//create normal distributions for each feature
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
 	normal_distribution<double> dist_theta(theta, std[2]);
@@ -42,7 +41,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	num_particles = 250;
 	weights.resize(num_particles);
 
-	// init each particle
 	for (int i = 0; i < num_particles; i++){
 		Particle particle_i;
 
@@ -75,23 +73,25 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 
 			//update the particle position
 			Particle particle_i;
+			
 			particle_i.x = particles[i].x + (velocity / yaw_rate) * (sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
 			particle_i.y = particles[i].y + (velocity / yaw_rate) * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t));
+			
 			particle_i.theta = particles[i].theta + yaw_rate*delta_t;
 
-			//add gaussian noise
+			//add noise
 			normal_distribution<double> dist_x(particle_i.x, std_pos[0]);
 			normal_distribution<double> dist_y(particle_i.y, std_pos[1]);
 			normal_distribution<double> dist_theta(particle_i.theta, std_pos[2]);
 
-			//set particle state
+			//set state
 			particles[i].x = dist_x(gen);
 			particles[i].y = dist_y(gen);
 			particles[i].theta = dist_theta(gen);
 		}
 
 		else {
-			//update the particle position
+			//update particle pos
 			Particle particle_i;
 			particle_i.x = particles[i].x + velocity*cos(particles[i].theta)*delta_t;
 			particle_i.y = particles[i].y + velocity*sin(particles[i].theta)*delta_t;
@@ -117,8 +117,6 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
-
-	//Nearest neighbour calculation
 
 	double m_dist = 0;
 	for (int i = 0; i<observations.size(); i++){
@@ -228,11 +226,12 @@ void ParticleFilter::resample() {
 	std::mt19937 generator_wts(rd_wts());
 
 
-	// Creates a discrete distribution for weight.
+	// discrete distrib. for weight
 	std::discrete_distribution<int> distribution_wts(weights.begin(), weights.end());
 	std::vector<Particle> resampled_particles;
 
-	// Resample
+	
+	// resampling
 	for(int i=0;i<num_particles;i++){
 		Particle particles_i = particles[distribution_wts(generator_wts)];
 		resampled_particles.push_back(particles_i);
@@ -250,7 +249,7 @@ Particle ParticleFilter::SetAssociations(Particle particle, std::vector<int> ass
 	// sense_x: the associations x mapping already converted to world coordinates
 	// sense_y: the associations y mapping already converted to world coordinates
 
-	//Clear the previous associations
+	// clearingprevious associations
 	particle.associations.clear();
 	particle.sense_x.clear();
 	particle.sense_y.clear();
